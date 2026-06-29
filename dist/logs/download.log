@@ -1,0 +1,9 @@
+2026-06-29 15:11:26 [INFO] 软件批量下载器 2.0.0 启动
+2026-06-29 15:11:26 [ERROR] Traceback (most recent call last):
+  File "main.py", line 47, in run
+  File "main.py", line 37, in initialize
+  File "gui.py", line 289, in __init__
+  File "gui.py", line 297, in create_widgets
+  File "gui.py", line 349, in create_toolbar
+AttributeError: 'DownloadGUI' object has no attribute 'open_excel'
+
