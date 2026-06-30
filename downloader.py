@@ -22,6 +22,9 @@ from config import (
 )
 from logger import logger
 
+# 新增解析下载页功能
+from page_parser import resolve_download_url, _looks_like_file_url
+
 
 class DownloadError(Exception):
     """下载异常基类"""
@@ -30,7 +33,7 @@ class DownloadError(Exception):
 
 class DownloadManager:
     """
-    下载管理器 - 支持多线程批量下载
+    下载管理器 - ���持多线程批量下载
     """
 
     def __init__(self):
@@ -225,6 +228,20 @@ class DownloadManager:
             save_file: 保存文件路径
             headers: HTTP请求头
         """
+        # 在请求之前，如果传入的是“下载页面”，先解析出真实文件 URL
+        try:
+            # 1) 如果 URL 看起来不是直接文件（没有已知扩展名），尝试解析下载页面
+            if not _looks_like_file_url(url):
+                try:
+                    real_url = resolve_download_url(url)
+                    self.log(f"{name} 解析下载页面，找到安装包：{real_url}")
+                    url = real_url
+                except Exception as e:
+                    # 解析失败：记录日志，但仍然尝试原始 URL（部分页面重定向到文件）
+                    self.log(f"{name} 解析下载页面失败：{e}，将尝试直接请求页面链接")
+        except Exception as e:
+            self.log(f"{name} 在解析下载页面时发生错误：{e}")
+
         # 使用临时文件，下载完成后原子性移动
         temp_file = save_file.with_suffix(".tmp")
 
@@ -275,7 +292,7 @@ class DownloadManager:
             # 验证下载完整性
             if total_size > 0 and downloaded != total_size:
                 raise DownloadError(
-                    f"文件不完整：已下载 {downloaded}/{total_size} 字节"
+                    f"��件不完整：已下载 {downloaded}/{total_size} 字节"
                 )
 
             # 原子性移动文件
